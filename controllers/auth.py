@@ -1,14 +1,22 @@
 from flask import jsonify
 from models.auth import email_already_exists
 
-def signup_controller(payload):
+def signup_ctrl(payload):
     payload_errors = payload_validation(payload)
     if len(payload_errors) > 0:
         return jsonify(payload_errors), 400
     return jsonify('Looking good'), 200
+
+
+def login_ctrl(payload):
+    e_validation = entry_validation(payload, ('email', 'password'))
+    if len(e_validation) > 0:
+        return jsonify(e_validation), 400
+    return jsonify('ur logged in'), 200
+
     
 def payload_validation(payload):
-    e_validation = entry_validation(payload)
+    e_validation = entry_validation(payload, ('email', 'password', 'passwordMatch'))
     if len(e_validation) > 0: 
         return e_validation
 
@@ -16,22 +24,19 @@ def payload_validation(payload):
     if email_already_exists(payload.get('email').strip()):
         validation_errors.append('email is already in use')
 
-    p_validation = password_validation(payload.get('password'))
+    p_validation = password_validation(payload.get('password'), payload.get('passwordMatch'))
     if len(p_validation) > 0: 
         validation_errors = validation_errors + p_validation
     return validation_errors
 
-def entry_validation(payload):
+def entry_validation(payload, required_fields):
     payload_errors = []
-    required_fields = ('email', 'password', 'passwordMatch')
     for field in required_fields:
         if payload.get(field) is None:
             payload_errors.append('{} is required'.format(field))
-    if payload.get('passwordMatch').strip() != payload.get('password').strip():
-        payload_errors.append('passwords do not match')
     return payload_errors
 
-def password_validation(password):
+def password_validation(password, passwordMatch):
     spec_chars = '!@#$%^&*()-_+=[]{}|;:\'"?/.,><'
     password_errors = []
     if len(password) < 8:
@@ -47,4 +52,6 @@ def password_validation(password):
         password_errors.append('password must include a capital letter')
     if no_spec_chars == True:
         password_errors.append('password must incldue a special character')
+    if passwordMatch.strip() != password.strip():
+        password_errors.append('passwords do not match')
     return password_errors
