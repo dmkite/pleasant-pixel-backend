@@ -9,11 +9,13 @@ def signup():
   response = signup_ctrl(payload)
   return response
 
+
 @app.route('/login', methods=['POST'])
 def login():
   payload = request.get_json()
   response = login_ctrl(payload)
   return response
+
 
 @app.errorhandler(404)
 def not_found(error):

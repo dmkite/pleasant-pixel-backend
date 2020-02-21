@@ -1,5 +1,6 @@
 from flask import jsonify
-from models.auth import email_already_exists
+from models.auth import signup_mod, login_mod
+from models.users import user_exists
 
 def signup_ctrl(payload):
     payload_errors = payload_validation(payload)
@@ -21,7 +22,7 @@ def payload_validation(payload):
         return e_validation
 
     validation_errors = []
-    if email_already_exists(payload.get('email').strip()):
+    if user_exists(payload.get('email').strip()):
         validation_errors.append('email is already in use')
 
     p_validation = password_validation(payload.get('password'), payload.get('passwordMatch'))
@@ -29,12 +30,14 @@ def payload_validation(payload):
         validation_errors = validation_errors + p_validation
     return validation_errors
 
+
 def entry_validation(payload, required_fields):
     payload_errors = []
     for field in required_fields:
         if payload.get(field) is None:
             payload_errors.append('{} is required'.format(field))
     return payload_errors
+
 
 def password_validation(password, passwordMatch):
     spec_chars = '!@#$%^&*()-_+=[]{}|;:\'"?/.,><'
