@@ -14,7 +14,16 @@ def login_ctrl(payload):
     e_validation = entry_validation(payload, ('email', 'password'))
     if len(e_validation) > 0:
         return jsonify(e_validation), 400
-    return jsonify('ur logged in'), 200
+    token = login_mod(payload.get('email'), payload.get('password'))
+    print(token)
+    if token:
+        return jsonify({
+            'message': 'You\'re all set.',
+            'token': token
+        })
+    return jsonify({
+        'message': 'Something went wrong.'
+    }), 400
 
     
 def payload_validation(payload):

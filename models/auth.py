@@ -9,40 +9,37 @@ jwt = JWT()
 client = boto3.client('dynamodb')
 user_table = 'pleasant_pixel_users'
 
-
 def signup_mod(email, password):
     try:
         password = password.encode('utf-8')
         hashed = bcrypt.hashpw(password, bcrypt.gensalt())
-        print(hashed)
-        response = client.update_item(
+        client.put_item(
             TableName=user_table,
-            Key={
+            Item={
                 'email': {
-                    'S': email.lower(),
-                }
-            },
-            UpdateExpression='password = :password',
-            ExpressionAttributeValues={
-                ':password': {
+                    'S': email.lower()
+                },
+                'password': {
                     'S': str(hashed)
                 }
             }
         )
-        print(response)
         return True
-    except ValueError:
-        print('NOOOOOOO!')
+    except:
         return False
-
 
 def login_mod(email, password):
-    hashed = bcrypt.hashpw(password, 10)
-    stored_pw = get_user(email).password
-    if bcrypt.checkpw(stored_pw, hashed):
-        return True
+    password = password.encode('utf-8')
+    hashed = bcrypt.hashpw(password, bcrypt.gensalt())
+    stored_pw = get_user(email).get('password').get('S').encode('utf-8')
+    password_matches = bcrypt.checkpw(stored_pw, hashed)
+    print(password_matches)
+    if password_matches:
+        token = gen_token(email)
+        print(token)
+        return token
     else:
-        return False
+        return 'Passwords do not match'
 
 
 def gen_token(email):
@@ -55,6 +52,7 @@ def gen_token(email):
             'exp': time.time() * 100 + twentyFourHours
         }
         compact_jws = jwt.encode(message, signing_key, 'RS256')
+        print(compact_jws)
         return compact_jws
 
 
