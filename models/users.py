@@ -1,5 +1,5 @@
 import boto3
-user_table = 'user_data'
+user_table = 'pleasant_pixel_users'
 client = boto3.client('dynamodb')
 
 # email: xxx@yyy.zzz
@@ -17,6 +17,10 @@ def user_exists(email):
 def get_user(email):
     response = client.get_item(
         TableName=user_table,
-        Key={'string': {'S': email} }
+        Key={
+            'email': {
+                'S': email.lower()
+            }
+        }
     )
-    return response
+    return response.get('Item', None)

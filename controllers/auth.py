@@ -6,6 +6,7 @@ def signup_ctrl(payload):
     payload_errors = payload_validation(payload)
     if len(payload_errors) > 0:
         return jsonify(payload_errors), 400
+    signup_mod(payload.get('email'), payload.get('password'))
     return jsonify('Looking good'), 200
 
 

@@ -1,21 +1,49 @@
-import bcrypt 
+import bcrypt
+import boto3
 from jwt import JWT, jwk_from_pem, jwk_from_dict
 from models.users import get_user
 import time
 import json
 
 jwt = JWT()
+client = boto3.client('dynamodb')
+user_table = 'pleasant_pixel_users'
+
 
 def signup_mod(email, password):
-    return True
+    try:
+        password = password.encode('utf-8')
+        hashed = bcrypt.hashpw(password, bcrypt.gensalt())
+        print(hashed)
+        response = client.update_item(
+            TableName=user_table,
+            Key={
+                'email': {
+                    'S': email.lower(),
+                }
+            },
+            UpdateExpression='password = :password',
+            ExpressionAttributeValues={
+                ':password': {
+                    'S': str(hashed)
+                }
+            }
+        )
+        print(response)
+        return True
+    except ValueError:
+        print('NOOOOOOO!')
+        return False
+
 
 def login_mod(email, password):
     hashed = bcrypt.hashpw(password, 10)
     stored_pw = get_user(email).password
     if bcrypt.checkpw(stored_pw, hashed):
         return True
-    else: 
+    else:
         return False
+
 
 def gen_token(email):
     with open('rsa_private_key.pem', 'rb') as fh:
@@ -29,6 +57,7 @@ def gen_token(email):
         compact_jws = jwt.encode(message, signing_key, 'RS256')
         return compact_jws
 
+
 def check_token(compact_jws, email):
     with open('rsa_public_key.json', 'r') as fh:
         verifying_key = jwk_from_dict(json.load(fh))
@@ -37,5 +66,5 @@ def check_token(compact_jws, email):
         emails_do_not_match = message_received.sub != email
         if is_expired or emails_do_not_match:
             return False
-        else :
+        else:
             return True
