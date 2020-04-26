@@ -5,9 +5,13 @@ from models.users import user_exists
 def signup_ctrl(payload):
     payload_errors = payload_validation(payload)
     if len(payload_errors) > 0:
-        return jsonify(payload_errors), 400
+        return jsonify({
+            'message': payload_errors
+        }), 400
     signup_mod(payload.get('email'), payload.get('password'))
-    return jsonify('Looking good'), 200
+    return jsonify({
+        'message': 'ok'
+    }), 200
 
 
 def login_ctrl(payload):
@@ -15,12 +19,11 @@ def login_ctrl(payload):
     if len(e_validation) > 0:
         return jsonify(e_validation), 400
     token = login_mod(payload.get('email'), payload.get('password'))
-    print(token)
     if token:
         return jsonify({
-            'message': 'You\'re all set.',
-            'token': token
-        })
+            'message': 'ok',
+            'token': token.decode('utf-8')
+        }), 200
     return jsonify({
         'message': 'Something went wrong.'
     }), 400
@@ -45,7 +48,7 @@ def entry_validation(payload, required_fields):
     payload_errors = []
     for field in required_fields:
         if payload.get(field) is None:
-            payload_errors.append('{} is required'.format(field))
+            payload_errors.append(f'{field} is required')
     return payload_errors
 
 
