@@ -29,24 +29,25 @@ def signup_mod(email, password):
         return False
 
 def login_mod(email, password):
-    # password = password.encode('utf-8')
-    stored_pw = get_user(email).get('password').get('B')
+    user = get_user(email)
+    stored_pw = user.get('password', {}).get('B')
+    if not stored_pw:
+        return f'No record for {email}'
     password_matches = bcrypt.checkpw(password.encode('utf-8'), stored_pw)
 
     if password_matches:
         token = gen_token(email)
-        print(token)
         return token
     else:
         return 'Passwords do not match'
 
 
 def gen_token(email):
-    twentyFourHours = 8.64e7
+    twentyFourHours = 86400
     message = {
         'sub': email,
-        'iat': time.time() * 100,
-        'exp': time.time() * 100 + twentyFourHours
+        'iat': time.time(),
+        'exp': time.time() + twentyFourHours
     }
     encoded = jwt.encode(message, key, algorithm='HS256')
     return encoded

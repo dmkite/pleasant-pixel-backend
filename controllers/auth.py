@@ -19,7 +19,7 @@ def login_ctrl(payload):
     if len(e_validation) > 0:
         return jsonify(e_validation), 400
     token = login_mod(payload.get('email'), payload.get('password'))
-    if token:
+    if token and not isinstance(token, str):
         return jsonify({
             'message': 'ok',
             'token': token.decode('utf-8')

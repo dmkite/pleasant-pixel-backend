@@ -16,20 +16,16 @@ def get_settings(email):
 
 
 def change_settings(email):
-    user = get_user(email)
-    if not user:
-        return jsonify({
-            'message': f'No user data for {email}'
-        }), 404
     response = change_settings_mod(email, request.get_json())
     if not response:
         return jsonify({
-            'message': 'could not update settings'
+            'message': f'No user data for {email}'
+        }), 404
+    elif response.get('ResponseMetadata', {}).get('HTTPStatusCode') != 200:
+        return jsonify({
+            'message': f'Could not change settings'
         }), 500
-    return jsonify({
-        'message': 'ok'
-    }), 200
-
-def gen_settings():
-    # TODO: do some kind of spread to update a single key and not overwrite
-    pass
+    else:
+        return jsonify({
+            'message': 'ok'
+        }), 200
