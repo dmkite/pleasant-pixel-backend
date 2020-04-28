@@ -64,19 +64,18 @@ def get_year(email, year):
 #         return update_day(email, year, month, day)
 
 
-# @app.route(
-#     '/users/<email>/calendar/<year>',
-#     # defaults={'email': None,'year': None, 'month': None, 'day': None},
-#     methods=['GET', 'PUT'])
-# # @authenticate
-# def calendar(email, year, month, day):
-#     print(email, year, month, day)
-#     if not email:
-#         return jsonify({'message': 'You must provide an email'}), 400
-#     if request.method == 'GET':
-#         return get_calendar(email, year, month, day)
-#     else:
-#         return update_day(email, year, month, day)
+@app.route(
+    '/users/<email>/calendar/<year>/<month>/<day>',
+    methods=['GET', 'PUT'])
+# @authenticate
+def calendar_day(email, year, month, day):
+    print(email, year, month, day)
+    if not email:
+        return jsonify({'message': 'You must provide an email'}), 400
+    if request.method == 'GET':
+        return get_calendar(email, year=year, month=month, day=day)
+    else:
+        return update_day(email, year, month, day, request.get_json())
 
 
 @app.errorhandler(404)
